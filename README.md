@@ -1,7 +1,7 @@
 
 -----
 
-# generate\_validation 📝
+# Generate validation 📝
 
 A Laravel package to automatically generate validation rules from models.
 
@@ -22,15 +22,168 @@ composer require hasan-22/generate_validation
 
 ### 1\. Generating a Form Request
 
-To generate a new Form Request class for your model, use the `make:validation` Artisan command.
+* ####  First, create the migration.
+* ####  Then, create the model.
+* ####  Finally, run the Artisan command.
+
+
+For example, we want to generate validation for the `Post` model.
+
+First, create the migration and model using this command:
 
 ```bash
-php artisan make:validation Post
+php artisan make:model Post -m
+```
+### This is our `Post` migration
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('posts', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('title')->unique();
+            $table->text('content');
+            $table->string('image');
+            $table->enum('status', ['draft', 'published', 'archived'])->default('draft');
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('posts');
+    }
+};
+
+
 ```
 
-This will create a new file at `app/Http/Requests/PostRequest.php` containing the generated rules.
+### This is our `Post` model
 
-Please review the created validation once to ensure that nothing is missing or excessive, and fix it if necessary.
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Post extends Model
+{
+    //
+}
+
+```
+
+### And now run this command for generate the validations:
+```bash 
+php artisan make:validation Post 
+```
+
+**Note:** This will create a new file at `app/Http/Requests/PostRequest.php` containing the generated rules.
+
+### This is the `PostRequest.php` file
+
+```php
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+/**
+ * Class PostRequest
+ *
+ * This Form Request class is used to validate incoming requests for the
+ * Post model. It separates validation rules for "store" (create)
+ * and "update" operations, ensuring data integrity.
+ *
+ * @package App\Http\Requests
+ */
+class PostRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     *
+     * In most cases, this should return true if the user is authenticated.
+     * You can add custom authorization logic here if needed.
+     *
+     * @return bool
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * This method dynamically returns a different set of rules based on the
+     * HTTP method (POST for store, PUT/PATCH for update).
+     *
+     * @return array
+     */
+    public function rules(): array
+    {
+        return $this->isMethod('POST') ? $this->forStore() : $this->forUpdate();
+    }
+
+    /**
+     * Get the validation rules for a "store" (create) request.
+     *
+     * These rules are applied when creating a new Post resource.
+     *
+     * @return array
+     */
+    private function forStore(): array
+    {
+        return [
+            // Generated rules for a new resource will be injected here.
+            'user_id' => ['required', 'integer', 'min:0', 'max:18446744073709551615', 'exists:users,id'],
+            'title' => ['unique:posts,title', 'required', 'string', 'max:255'],
+            'content' => ['required', 'string', 'max:65535'],
+            'image' => ['required', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
+            'status' => ['required', 'in:draft,published,archived']
+        ];
+    }
+
+    /**
+     * Get the validation rules for an "update" request.
+     *
+     * These rules are applied when updating an existing Post resource.
+     *
+     * @return array
+     */
+    public function forUpdate(): array
+    {
+        return [
+            // Generated rules for updating a resource will be injected here.
+            'user_id' => ['required', 'integer', 'min:0', 'max:18446744073709551615', 'exists:users,id'],
+            'title' => ['unique:posts,title,id', 'required', 'string', 'max:255'],
+            'content' => ['required', 'string', 'max:65535'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
+            'status' => ['required', 'in:draft,published,archived']
+        ];
+    }
+}
+
+```
+
+**Note:** Please review the created validation once to ensure that nothing is missing or excessive, and fix it if necessary.
 
 ### 2\. Using the Form Request
 
@@ -54,9 +207,7 @@ class PostController extends Controller
      */
     public function store(PostRequest $request)
     {
-        $data = $request->validated(); // This line is not necessary
-
-        Post::create($data);
+        Post::create($request->all());
 
         return response()->json(['message' => 'Post created successfully!']);
     }
@@ -70,9 +221,7 @@ class PostController extends Controller
      */
     public function update(PostRequest $request, Post $post)
     {
-        $data = $request->validated(); // This line is not necessary
-        
-        $post->update($data);
+        $post->update($request->all());
 
         return response()->json(['message' => 'Post updated successfully!']);
     }
@@ -92,8 +241,8 @@ use GenerateValidation\Strategies\BlobRuleGenerator;
 BlobRuleGenerator::setMaxSize(5120); // 5MB
 
 // This adds to the list of possible names used for images.
-// or example, if you have a column that stores an image and its name is `my_image`, you need to add this name so it can be recognized. 
-BlobRuleGenerator::addImageName('my_image');
+// or example, if you have a column that stores an image and its name is `my_thumbnail`, you need to add this name so it can be recognized. 
+BlobRuleGenerator::addImageName('my_thumbnail');
 
 // Add additional MIME types to the existing list
 BlobRuleGenerator::setMimes(['webp', 'avif'], 'merge');
