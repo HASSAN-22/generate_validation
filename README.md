@@ -81,15 +81,24 @@ class PostController extends Controller
 
 ## ⚙️ Configuration (Optional)
 
-You can customize the default rules for specific strategies. For example, to change the default `max` size for images, you can use the static methods on the `BlobRuleGenerator` class.
+You can customize the default rules for specific strategies. For example, to change the default `max` size for images, you can use the static methods of the BlobRuleGenerator class.
+
+In your `ServiceProvider`'s boot method:
 
 ```php
-// In a service provider or bootstrap file
 use ModelValidator\Strategies\BlobRuleGenerator;
 
+// Set the maximum file size (in kilobytes)
 BlobRuleGenerator::setMaxSize(5120); // 5MB
+
+// This adds to the list of possible names used for images.
+// or example, if you have a column that stores an image and its name is `my_image`, you need to add this name so it can be recognized. 
+BlobRuleGenerator::addImageName('my_image');
+
+// Add additional MIME types to the existing list
 BlobRuleGenerator::setMimes(['webp', 'avif'], 'merge');
-// Or for replace the mimes
+
+// Or replace the MIME types entirely
 BlobRuleGenerator::setMimes(['webp', 'avif'], 'replace');
 ```
 

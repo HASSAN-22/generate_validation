@@ -29,13 +29,7 @@ class BlobRuleGenerator extends RuleGeneratorAbstract
      */
     private static array $mimes = ['jpeg', 'png', 'jpg', 'gif', 'svg'];
     
-    /**
-     * An array of column names that are typically used for images.
-     *
-     * @var array
-     */
-    protected array $imageColumnTypes = ['image', 'avatar', 'photo', 'picture'];
-
+ 
     /**
      * Generates a set of validation rules for a given column.
      *
@@ -128,15 +122,17 @@ class BlobRuleGenerator extends RuleGeneratorAbstract
     }
     
     /**
-     * Checks if a column name suggests it holds an image.
+     * Adds a new image type to the list of recognized image-related column names.
      *
-     * @param array $columnDetails
-     * @return bool
+     * This method allows for extending the predefined list of image types.
+     *
+     * @param string $type The new image type to add.
+     * @return void
      */
-    protected function hasTypeOfImage(array $columnDetails): bool
+    protected static function addImageName(string $type): void
     {
-        $columnName = $columnDetails['name'];
-        return Str::contains($columnName, $this->imageColumnTypes);
+        self::addToImageTypes($type);
+        return new self();
     }
 
     /**
