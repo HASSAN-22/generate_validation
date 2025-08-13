@@ -32,6 +32,8 @@ php artisan make:validation Post
 
 This will create a new file at `app/Http/Requests/PostRequest.php` containing the generated rules.
 
+Please review the created validation once to ensure that nothing is missing or excessive, and fix it if necessary.
+
 ### 2\. Using the Form Request
 
 You can now use this Form Request in your controller methods to automatically validate incoming requests.
@@ -54,7 +56,7 @@ class PostController extends Controller
      */
     public function store(PostRequest $request)
     {
-        $data = $request->validated();
+        $data = $request->validated(); // This line is not necessary
 
         Post::create($data);
 
@@ -70,7 +72,7 @@ class PostController extends Controller
      */
     public function update(PostRequest $request, Post $post)
     {
-        $data = $request->validated();
+        $data = $request->validated(); // This line is not necessary
         
         $post->update($data);
 
