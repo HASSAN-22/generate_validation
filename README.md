@@ -86,7 +86,7 @@ You can customize the default rules for specific strategies. For example, to cha
 In your `ServiceProvider`'s boot method:
 
 ```php
-use ModelValidator\Strategies\BlobRuleGenerator;
+use GenerateValidation\Strategies\BlobRuleGenerator;
 
 // Set the maximum file size (in kilobytes)
 BlobRuleGenerator::setMaxSize(5120); // 5MB

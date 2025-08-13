@@ -129,7 +129,7 @@ class BlobRuleGenerator extends RuleGeneratorAbstract
      * @param string $type The new image type to add.
      * @return self
      */
-    protected static function addImageName(string $type): self
+    public static function addImageName(string $type): self
     {
         self::addToImageTypes($type);
         return new self();
