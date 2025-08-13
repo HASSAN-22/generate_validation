@@ -101,6 +101,9 @@ BlobRuleGenerator::setMimes(['webp', 'avif'], 'merge');
 // Or replace the MIME types entirely
 BlobRuleGenerator::setMimes(['webp', 'avif'], 'replace');
 ```
+## 💖 Support the Project
+
+If you like this project and want to support its development, you can donate here: [Donate via NOWPayments](https://nowpayments.io/donation/hassan)
 
 ## 🤝 Contributing
 
