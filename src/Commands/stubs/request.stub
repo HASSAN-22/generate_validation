@@ -1,0 +1,73 @@
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+/**
+ * Class {{ modelName }}Request
+ *
+ * This Form Request class is used to validate incoming requests for the
+ * {{ modelName }} model. It separates validation rules for "store" (create)
+ * and "update" operations, ensuring data integrity.
+ *
+ * @package App\Http\Requests
+ */
+class {{ modelName }}Request extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     *
+     * In most cases, this should return true if the user is authenticated.
+     * You can add custom authorization logic here if needed.
+     *
+     * @return bool
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * This method dynamically returns a different set of rules based on the
+     * HTTP method (POST for store, PUT/PATCH for update).
+     *
+     * @return array
+     */
+    public function rules(): array
+    {
+        return $this->isMethod('POST') ? $this->forStore() : $this->forUpdate();
+    }
+
+    /**
+     * Get the validation rules for a "store" (create) request.
+     *
+     * These rules are applied when creating a new {{ modelName }} resource.
+     *
+     * @return array
+     */
+    private function forStore(): array
+    {
+        return [
+            // Generated rules for a new resource will be injected here.
+            {{ storeRules }}
+        ];
+    }
+
+    /**
+     * Get the validation rules for an "update" request.
+     *
+     * These rules are applied when updating an existing {{ modelName }} resource.
+     *
+     * @return array
+     */
+    public function forUpdate(): array
+    {
+        return [
+            // Generated rules for updating a resource will be injected here.
+            {{ updateRules }}
+        ];
+    }
+}
