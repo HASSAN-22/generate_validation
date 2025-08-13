@@ -9,8 +9,6 @@ A Laravel package to automatically generate validation rules from models.
 
   - **Automatic Rule Generation**: Automatically creates comprehensive validation rules for your models based on their database schema.
   - **Store & Update Separation**: Generates separate rule sets for `store` (create) and `update` operations, handling nuances like `required` vs. `nullable` fields.
-  - **Customizable**: The generated Form Request classes are fully editable, allowing you to easily add or modify rules as needed.
-  - **Extensible**: The underlying rule generation logic uses a strategy pattern, making it easy to add support for new column types or custom validation rules.
 
 ## 🚀 Installation
 
