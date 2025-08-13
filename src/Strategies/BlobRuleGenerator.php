@@ -127,9 +127,9 @@ class BlobRuleGenerator extends RuleGeneratorAbstract
      * This method allows for extending the predefined list of image types.
      *
      * @param string $type The new image type to add.
-     * @return void
+     * @return self
      */
-    protected static function addImageName(string $type): void
+    protected static function addImageName(string $type): self
     {
         self::addToImageTypes($type);
         return new self();
