@@ -284,7 +284,7 @@ ___
 
 ### 🖼 Blob & File Rules
 
-You can customize the default rules for specific strategies. For example, to change the default `max` size for images, you can use the static methods of the BlobRuleGenerator class.
+You can customize the default rules for specific strategies. For example, to change the default `max` size for images, you can use the static methods of the BlobRuleGenerator class. 
 
 In your `ServiceProvider`'s boot method:
 
