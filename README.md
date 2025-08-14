@@ -5,10 +5,14 @@
 
 A Laravel package to automatically generate validation rules from models.
 
+
 ## ✨ Features
 
-  - **Automatic Rule Generation**: Automatically creates comprehensive validation rules for your models based on their database schema.
-  - **Store & Update Separation**: Generates separate rule sets for `store` (create) and `update` operations, handling nuances like `required` vs. `nullable` fields.
+- **Generate Rules Automatically**: Creates comprehensive validation rules for your models based on their database schema.
+- **Separate Store & Update Rules**: Generates distinct rule sets for `store` (create) and `update` operations, handling nuances like `required` vs. `nullable` fields.
+- **Ignore Specific Columns**: Skip certain columns when generating validation rules by passing them as an argument to the Artisan command.
+- **Override with Custom Rules**: Define your own validation rules for specific models and columns in the configuration file, overriding the default auto-generated ones.
+
 
 ## 🚀 Installation
 
@@ -91,8 +95,13 @@ class Post extends Model
 
 ### And now run this command for generate the validations:
 ```bash 
+# Generate all validations for the Post model
 php artisan make:validation Post 
+
+# To ignore some columns (e.g., title and content):
+php artisan make:validation Post --ignore=title,content
 ```
+**Note:** Note: The `id` column is always excluded from generated validation rules. 
 
 **Note:** This will create a new file at `app/Http/Requests/PostRequest.php` containing the generated rules.
 
@@ -227,8 +236,53 @@ class PostController extends Controller
     }
 }
 ```
-
 ## ⚙️ Configuration (Optional)
+
+
+### 🎯 Custom Rules via Config
+
+In addition to automatically generating rules based on your model's database schema, you can define **custom validation rules** for specific models and columns in the configuration file.  
+
+This allows you to override the auto-generated rules and fully control the validation logic.
+
+### 1. Publish the Config File
+
+If you haven't already published the config file, run:
+
+```bash
+php artisan vendor:publish --tag=generate_validation
+```
+
+This will create a file at: `config/generate_validation.php`
+
+### 2. Define Your Custom Rules
+```php
+return [
+    'custom_rules' => [
+        // Model => [ column => rules... ]
+        'Post' => [
+            'title' => ['required', 'string', 'max:100'],
+            'content' => ['required', 'string', 'min:50'],
+        ],
+        'User' => [
+            'email' => ['required', 'email', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8'],
+        ],
+    ],
+];
+
+```
+### 3. How It Works
+
+If a column has a custom rule defined in the config, the package will use that instead of generating the rule automatically.
+
+If a column is not defined in custom_rules, the default auto-generation logic will be applied.
+
+This gives you the flexibility to handle special cases without losing the convenience of automatic generation.
+
+___
+
+### 🖼 Blob & File Rules
 
 You can customize the default rules for specific strategies. For example, to change the default `max` size for images, you can use the static methods of the BlobRuleGenerator class.
 
@@ -250,6 +304,7 @@ BlobRuleGenerator::setMimes(['webp', 'avif'], 'merge');
 // Or replace the MIME types entirely
 BlobRuleGenerator::setMimes(['webp', 'avif'], 'replace');
 ```
+
 ## 💖 Support the Project
 
 If you like this project and want to support its development, you can donate here: [Donate via NOWPayments](https://nowpayments.io/donation/hassan)

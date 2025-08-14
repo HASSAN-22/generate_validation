@@ -34,6 +34,10 @@ class GenerateValidationServiceProvider extends ServiceProvider
             $this->commands([
                 MakeModelValidationRequest::class,
             ]);
+
+            $this->publishes([
+                __DIR__ . '/config/generate_validation.php' => config_path('generate_validation.php'),
+            ], 'generate_validation');
         }
     }
 }
