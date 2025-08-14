@@ -1,0 +1,11 @@
+*.log
+/.fleet
+/.idea
+/.nova
+/.phpunit.cache
+/.vscode
+/.zed
+/node_modules
+/vendor
+Homestead.json
+Homestead.yaml
