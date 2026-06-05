@@ -94,13 +94,47 @@ class Post extends Model
 ```
 
 ### And now run this command for generate the validations:
+
+**Options explained:**
+- `--namespace` : Set a custom namespace for the generated request class. Default is `App\Http\Requests`.
+- `--name` : Set a custom name for the request class. Default is `{ModelName}Request`.
+- `--model-path` : Set a custom path for the model class. Default is `App\Models\{ModelName}`.
+- `--ignore` : Ignore specific columns when generating validation rules.
+- `--type` : Specify which rules to generate (`store`, `update`, or `all`). Default is `all`.
+- `--rules-only` : Output the generated rules to the console without saving to a file.
+```
+
 ```bash 
+
 # Generate all validations for the Post model
 php artisan make:validation Post 
 
 # To ignore some columns (e.g., title and content):
 php artisan make:validation Post --ignore=title,content
+
+# Outputs the generated validation rules without saving them to a file:
+php artisan make:validation Post --rules-only
+
+# Generates validation rules only for the specified type (store, update, or all). Default is all:
+php artisan make:validation Post --type store
+
+# Specify a custom namespace for the generated request class:
+php artisan make:validation Post --namespace=App\Http\Requests\Admin
+
+# Specify a custom name for the generated request class:
+php artisan make:validation Post --name=CustomPostRequest
+
+# Specify a custom model path if your model is not in the default location:
+php artisan make:validation Post --model-path=App\Models\Admin\Post
+
+# Combine options for advanced usage:
+php artisan make:validation Post --ignore=title,content --type=update --namespace=App\Http\Requests\Admin --name=AdminPostRequest --model-path=App\Models\Admin\Post
+
+# Display only the update rules for a model in a custom namespace, without saving to a file:
+php artisan make:validation Post --type=update --rules-only --namespace=App\Http\Requests\Admin
+
 ```
+
 **Note:** Note: The `id` column is always excluded from generated validation rules. 
 
 **Note:** This will create a new file at `app/Http/Requests/PostRequest.php` containing the generated rules.
@@ -282,6 +316,7 @@ This gives you the flexibility to handle special cases without losing the conven
 
 ___
 
+
 ### 🖼 Blob & File Rules
 
 You can customize the default rules for specific strategies. For example, to change the default `max` size for images, you can use the static methods of the BlobRuleGenerator class. 
@@ -304,6 +339,43 @@ BlobRuleGenerator::setMimes(['webp', 'avif'], 'merge');
 // Or replace the MIME types entirely
 BlobRuleGenerator::setMimes(['webp', 'avif'], 'replace');
 ```
+
+### 📅 Custom Date Format for Date, Datetime, and Timestamp
+
+You can now customize the date format used for validation rules in the following strategies:
+- `DateRuleGenerator`
+- `DatetimeRuleGenerator`
+- `TimestampRuleGenerator`
+
+This allows you to set your preferred date format for each type, which will be used in the generated `date_format` validation rule.
+
+In your `ServiceProvider`'s boot method:
+
+**Usage Example:**
+
+```php
+use GenerateValidation\Strategies\DateRuleGenerator;
+use GenerateValidation\Strategies\DatetimeRuleGenerator;
+use GenerateValidation\Strategies\TimestampRuleGenerator;
+
+// Set custom date format for Date fields
+DateRuleGenerator::setDateFormat('d/m/Y'); // date_format:d/m/Y
+
+// Set custom date format for Timestamp fields
+TimestampRuleGenerator::setDateFormat('Y-m-d'); // date_format:Y-m-d
+
+// Set custom date format for Datetime fields
+DatetimeRuleGenerator::setDateFormat('d-m-Y H:i:s'); // date_format:d-m-Y H:i:s
+
+// set custom time format for time fields
+DatetimeRuleGenerator::setTimeFormat('H:i:s'); // date_format:H:i:s
+
+// set custom year format for year fields
+DatetimeRuleGenerator::setYearFormat('2000', '2030'); // between:2000,2030
+```
+
+This feature gives you full control over how date and time values are validated, making it easy to match your application's requirements or localization needs.
+
 
 ## 💖 Support the Project
 

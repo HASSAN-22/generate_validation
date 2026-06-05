@@ -13,6 +13,8 @@ namespace GenerateValidation\Strategies;
  */
 class TimestampRuleGenerator extends RuleGeneratorAbstract
 {
+    private static string $dateFormat = 'Y-m-d H:i:s';
+
     /**
      * Generates a set of validation rules for a timestamp column.
      *
@@ -25,7 +27,7 @@ class TimestampRuleGenerator extends RuleGeneratorAbstract
     public function generate(string $tableName, string $columnName, array $columnDetails, bool $isUpdate = false): array
     {
         // A. The primary rule to validate the input format for a timestamp.
-        $rules = ['date_format:Y-m-d H:i:s'];
+        $rules = ['date_format:' . self::$dateFormat];
 
         // B. Add `required` or `nullable` rule based on the column's database schema.
         if (!$columnDetails['nullable']) {
@@ -46,5 +48,10 @@ class TimestampRuleGenerator extends RuleGeneratorAbstract
     public function canApply(array $columnDetails): bool
     {
         return $columnDetails['type_name'] === 'timestamp';
+    }
+
+    public static function setDateFormat(string $format = 'Y-m-d H:i:s'): void
+    {
+        self::$dateFormat = $format;
     }
 }

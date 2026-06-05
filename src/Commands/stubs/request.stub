@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests;
+namespace {{ namespace }};
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -13,7 +13,7 @@ use Illuminate\Foundation\Http\FormRequest;
  *
  * @package App\Http\Requests
  */
-class {{ modelName }}Request extends FormRequest
+class {{ modelName }} extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.

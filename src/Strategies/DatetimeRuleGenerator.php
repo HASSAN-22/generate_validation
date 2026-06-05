@@ -12,6 +12,11 @@ namespace GenerateValidation\Strategies;
  */
 class DatetimeRuleGenerator extends RuleGeneratorAbstract
 {
+
+    private static string $dateFormat = 'Y-m-d H:i:s';
+    private static string $timeFormat = 'H:i:s';
+    private static string $yearFormat = 'Y';
+
     /**
      * Generates a set of validation rules for various date and time-related column types.
      *
@@ -28,13 +33,13 @@ class DatetimeRuleGenerator extends RuleGeneratorAbstract
 
         // A. Add specific format or value rules based on the column type.
         if ($typeName === 'datetime') {
-            $rules[] = 'date_format:Y-m-d H:i:s';
+            $rules[] = 'date_format:' . self::$dateFormat;
         } elseif ($typeName === 'time') {
-            $rules[] = 'date_format:H:i:s';
+            $rules[] = 'date_format:' . self::$timeFormat;
         } elseif ($typeName === 'year') {
             $rules[] = 'digits:4';
             $rules[] = 'numeric';
-            $rules[] = 'between:1901,2155'; // The valid range for MySQL YEAR type.
+            $rules[] = 'between:' . self::$yearFormat; // The valid range for MySQL YEAR type.
         }
         
         // B. Add `required` or `nullable` rule based on the column's database schema.
@@ -56,5 +61,20 @@ class DatetimeRuleGenerator extends RuleGeneratorAbstract
     public function canApply(array $columnDetails): bool
     {   
         return in_array($columnDetails['type_name'], ['datetime', 'time', 'year']);
+    }
+
+    public static function setDateFormat(string $format = 'Y-m-d H:i:s'): void
+    {
+        self::$dateFormat = $format;
+    }
+
+    public static function setTimeFormat(string $format = 'H:i:s'): void
+    {
+        self::$timeFormat = $format;
+    }
+
+    public static function setYearFormat(string $start = '1901', string $end='2155'): void
+    {
+        self::$yearFormat = $start . ',' . $end;
     }
 }

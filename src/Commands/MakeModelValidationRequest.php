@@ -38,6 +38,11 @@ class MakeModelValidationRequest extends Command
      */
     protected $signature = 'make:validation 
         {--model= : The name of the model for which to generate validation} 
+        {--namespace= : Optional, the namespace for the generated request default: App\\Http\\Requests} 
+        {--name= : Optional, the name of the request class default: {ModelName}Request} 
+        {--model-path= : Optional, the path to the model class default: App\\Models\\{ModelName}} 
+        {--rules-only : Optional, The generated validation rules will be displayed only, not saved to a file} 
+        {--type= : Optional, The type of validation to generate (store/update/all) default: all} 
         {--ignore= : Optional, columns to ignore, comma-separated}';
 
 
@@ -58,11 +63,41 @@ class MakeModelValidationRequest extends Command
     {
         $this->modelName = $this->option('model');
         $ignoreColumns = $this->option('ignore');
-        $modelClass = "App\\Models\\{$this->modelName}";
+        $namespace = $this->option('namespace') ?? 'App\\Http\\Requests';
+        $name = $this->option('name') ?? "{$this->modelName}Request";
+        $modelClass = $this->option('model-path') ?? "App\\Models\\{$this->modelName}";
+        $type = $this->option('type') ?? 'all';
+        $rulesOnly = $this->option('rules-only');
+        
+
+        if($namespace){
+            $namespace = str_replace('\\', '/', $namespace);
+            $namespace = trim($namespace, '/');
+            $namespace = str_replace('/', '\\', $namespace);
+            $namespace = Str::replaceFirst('App\\', '', $namespace);
+        }
+
+        if($modelClass){
+            $modelClass = str_replace('\\', '/', $modelClass);
+            $modelClass = trim($modelClass, '/');
+            $modelClass = str_replace('/', '\\', $modelClass);
+            $modelClass = Str::contains($modelClass, 'App\\') ? $modelClass : 'App\\' . $modelClass;
+        }
+
+        if($name){
+            $name = str_replace('.php','',$name);
+        }
 
         if (!class_exists($modelClass)) {
             $this->error("Model '{$this->modelName}' does not exist.");
             return;
+        }
+
+        if(file_exists($this->getAppFilePath($modelClass))){
+            if (!$this->confirm("Request '{$this->getAppFilePath($modelClass)}' already exists. Do you want to overwrite it?")) {
+                $this->info('Operation cancelled.');
+                return;
+            }
         }
 
         $model = new $modelClass;
@@ -71,26 +106,53 @@ class MakeModelValidationRequest extends Command
         
         $generatedRules = $this->generateRules($columns, $tableName, explode(',', $ignoreColumns));
 
-        $requestName = "{$this->modelName}Request";
-        
-        $requestStub = file_get_contents(__DIR__ . '/stubs/request.stub');
-        
-        $storeRulesString = $this->formatRulesForStub($generatedRules['store']);
-        $updateRulesString = $this->formatRulesForStub($generatedRules['update']);
 
+        $requestStub = file_get_contents(__DIR__ . '/stubs/request.stub');
+
+        $storeRulesString = '';
+        $updateRulesString = '';
+
+        if($type == 'store'){
+            $storeRulesString = $this->formatRulesForStub($generatedRules['store']);
+        }elseif($type == 'update'){
+            $updateRulesString = $this->formatRulesForStub($generatedRules['update']);
+        }elseif($type == 'all'){
+            $storeRulesString = $this->formatRulesForStub($generatedRules['store']);
+            $updateRulesString = $this->formatRulesForStub($generatedRules['update']);
+        }else{
+            $this->error("Invalid type specified. Use 'store', 'update', or 'all'.");
+            return;
+        }
+        if ($rulesOnly) {
+            if ($type == 'store') {
+                $this->warn('Store Rules:');
+                $this->info(preg_replace('/^\s+/m', '', $storeRulesString));
+            } elseif ($type == 'update') {
+                $this->warn('Update Rules:');
+                $this->info(preg_replace('/^\s+/m', '', $updateRulesString));
+            } elseif ($type == 'all') {
+                $this->warn('Store Rules:');
+                $this->info(preg_replace('/^\s+/m', '', $storeRulesString));
+                $this->newLine();
+                $this->warn('Update Rules:'); 
+                $this->info(preg_replace('/^\s+/m', '', $updateRulesString));
+            }
+            return;
+        }
+       
         $requestContent = str_replace(
-            ['{{ modelName }}', '{{ storeRules }}', '{{ updateRules }}'],
-            [$this->modelName, $storeRulesString, $updateRulesString],
+            ['{{ namespace }}', '{{ modelName }}', '{{ storeRules }}', '{{ updateRules }}'],
+            ['App\\' . $namespace, $name, $storeRulesString, $updateRulesString],
             $requestStub
         );
         
-        $requestPath = app_path("Http/Requests/{$requestName}.php");
+        $requestPath = app_path("{$namespace}/{$name}.php");
         if (!is_dir(dirname($requestPath))) {
             mkdir(dirname($requestPath), 0755, true);
         }
         
         file_put_contents($requestPath, $requestContent);
-        $this->info("Form Request '{$requestName}' created successfully!");
+        $this->info("[*] Request '{$this->getAppFilePath($modelClass)}' created successfully!");
     }
 
 
@@ -244,5 +306,11 @@ class MakeModelValidationRequest extends Command
             $formattedRules[] = "'{$columnName}' => [{$rulesString}]";
         }
         return implode(',' . PHP_EOL . '            ', $formattedRules);
+    }
+
+    protected function getAppFilePath(string $className): string
+    {
+        $path = (new \ReflectionClass($className))->getFileName();
+        return str_replace(base_path() . DIRECTORY_SEPARATOR, '', $path);
     }
 }

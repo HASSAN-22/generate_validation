@@ -13,6 +13,8 @@ namespace GenerateValidation\Strategies;
  */
 class DateRuleGenerator extends RuleGeneratorAbstract
 {
+    private static $dateFormat;
+
     /**
      * Generates a set of validation rules for a date column.
      *
@@ -25,8 +27,8 @@ class DateRuleGenerator extends RuleGeneratorAbstract
     public function generate(string $tableName, string $columnName, array $columnDetails, bool $isUpdate = false): array
     {
         // Add the primary date format rule to ensure the input matches the standard Y-m-d format.
-        $rules = ['date_format:Y-m-d'];
-        
+        $rules = ['date_format:' . self::$dateFormat];
+
         // Add `required` or `nullable` rule based on the column's database schema.
         if (!$columnDetails['nullable']) {
             $rules[] = 'required';
@@ -46,5 +48,10 @@ class DateRuleGenerator extends RuleGeneratorAbstract
     public function canApply(array $columnDetails): bool
     {
         return $columnDetails['type_name'] === 'date';
+    }
+
+    public static function setDateFormat(string $format = 'Y-m-d'): void
+    {
+        self::$dateFormat = $format;
     }
 }
